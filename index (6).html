@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%230B7A75'/%3E%3Cg fill='none' stroke='white' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 21c0-5 3.600-9 8-9s8 4 8 9'/%3E%3Cpath d='M15.500 25c0-3 2-5.500 4.500-5.500s4.500 2.500 4.500 5.500v2'/%3E%3Cpath d='M20 24v5'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asistencia Biométrica</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{color-scheme:light}
+body{margin:0}
+[hidden]{display:none!important}
+
+/* Layout: barra superior con pestañas; contenido en una columna de 1100px que se reparte en rejillas por vista. */
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --surface-2:#EAF0EE; --ink:#12201F; --muted:#586866; --line:#D3DCDA;
+  --accent:#0B7A75; --accent-ink:#FFFFFF; --accent-soft:#D6EEEB;
+  --warn:#9A6200; --warn-soft:#F8EBCF; --bad:#B42318; --bad-soft:#FBE0DD; --good:#1A7F4B; --good-soft:#D9F0E3;
+  --font-display:'Space Grotesk',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif; --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1413; --surface:#141E1D; --surface-2:#1B2827; --ink:#E4EEEC; --muted:#8FA4A1; --line:#273837;
+  --accent:#3CC4BC; --accent-ink:#06201F; --accent-soft:#16403E;
+  --warn:#E5B04C; --warn-soft:#3A2D12; --bad:#F2877D; --bad-soft:#40201C; --good:#5FD59A; --good-soft:#163A28; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1413; --surface:#141E1D; --surface-2:#1B2827; --ink:#E4EEEC; --muted:#8FA4A1; --line:#273837;
+  --accent:#3CC4BC; --accent-ink:#06201F; --accent-soft:#16403E;
+  --warn:#E5B04C; --warn-soft:#3A2D12; --bad:#F2877D; --bad-soft:#40201C; --good:#5FD59A; --good-soft:#163A28; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font-body);padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:20px} h3{font-size:15px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono);font-size:12px}
+.muted{color:var(--muted)}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:20px 0 12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand h1{font-size:19px;line-height:1.2}
+.brand p{margin:0;font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--warn-soft);color:var(--warn)}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:24px;scrollbar-width:thin}
+nav button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:500 14px var(--font-body);padding:10px 14px;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}
+.panel>header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.stat .v{font:600 30px/1.1 var(--font-display);margin-top:6px}
+.stat .s{font-size:12px;color:var(--muted);margin-top:4px}
+
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.idle{background:var(--surface-2);color:var(--muted)}
+
+.bars{display:grid;gap:12px}
+.bar .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:4px}
+.bar .track{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:5px;transition:width .4s}
+.bar .fill.warn{background:var(--warn)} .bar .fill.bad{background:var(--bad)}
+
+.feed{list-style:none;margin:0;padding:0;display:grid}
+.feed li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.feed li:first-child{border-top:0}
+.feed .t{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.feed .n{min-width:0;overflow-wrap:anywhere}
+
+select,input[type=text]{font:14px var(--font-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0;max-width:100%}
+label{font-size:12px;font-weight:600;color:var(--muted);display:grid;gap:4px}
+button.btn{appearance:none;font:600 14px var(--font-body);border-radius:6px;padding:9px 14px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+button.btn.ghost{background:transparent;color:var(--accent)}
+button.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+button.btn:disabled{opacity:.5;cursor:not-allowed}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+
+.sensor{display:grid;gap:14px;justify-items:center;text-align:center}
+.reader{position:relative;width:160px;height:200px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+.reader svg{width:110px;height:140px;stroke:var(--muted);fill:none;stroke-width:2.2;stroke-linecap:round}
+.reader.scanning svg{stroke:var(--accent)}
+.reader.ok{border-color:var(--good);box-shadow:0 0 0 3px var(--good-soft)} .reader.ok svg{stroke:var(--good)}
+.reader.fail{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)} .reader.fail svg{stroke:var(--bad)}
+.beam{position:absolute;left:0;right:0;height:3px;background:var(--accent);opacity:0;top:0;box-shadow:0 0 12px var(--accent)}
+.reader.scanning .beam{opacity:1;animation:sweep .9s linear infinite}
+@keyframes sweep{from{top:0}to{top:calc(100% - 3px)}}
+@media (prefers-reduced-motion:reduce){.reader.scanning .beam{animation:none;top:50%}.bar .fill{transition:none}}
+.status{min-height:44px;font-weight:500}
+.status small{display:block;color:var(--muted);font-weight:400}
+
+.roster{display:grid;gap:0}
+.roster .r{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.roster .r:first-child{border-top:0}
+.roster .r div{min-width:0;overflow-wrap:anywhere}
+.log{background:var(--surface-2);border-radius:6px;padding:12px;height:190px;overflow:auto;margin:0;white-space:pre-wrap;color:var(--ink)}
+.log .tx{color:var(--accent)} .log .rx{color:var(--muted)} .log .er{color:var(--bad)} .log .ok{color:var(--good)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:400;color:var(--ink)}
+.consent input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent)}
+.form{display:grid;gap:14px}
+
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;counter-reset:s}
+.flow .step{position:relative;padding:14px;border:1px solid var(--line);background:var(--surface);margin:0 -1px -1px 0}
+.flow .step .k{font:600 11px var(--font-mono);color:var(--accent)}
+.flow .step b{display:block;font-family:var(--font-display);margin:4px 0}
+.flow .step span{font-size:12px;color:var(--muted)}
+.slider{width:100%;accent-color:var(--accent)}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:11px var(--font-body)}
+.dbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.dbgrid div{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--surface-2)}
+.dbgrid b{font-family:var(--font-mono);font-size:12px;display:block;margin-bottom:4px}
+.dbgrid span{font-size:12px;color:var(--muted)}
+.tag.live{background:var(--good-soft);color:var(--good)}
+.toast{position:fixed;bottom:max(16px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:500;z-index:20;max-width:calc(100% - 32px)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="var(--accent)"/><g fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"><path d="M12 21c0-5 3.6-9 8-9s8 4 8 9"/><path d="M15.5 25c0-3 2-5.5 4.5-5.5s4.500 2.500 4.500 5.500v2"/><path d="M20 24v5"/><path d="M12 26c0 3 1 5 2 6"/><path d="M28 24c0 4-1 6-2 8"/></g></svg>
+      <div><h1>Asistencia Biométrica</h1><p>Prototipo web-IoT · Arduino Mega + AS608 · Corporación Universitaria Rafael Núñez</p></div>
+    </div>
+    <span class="tag" id="tag">Datos de ejemplo, simulación en el navegador</span>
+  </header>
+  <nav role="tablist" id="nav"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- Datos de ejemplo ---------- */
+let SUBJECTS=[
+  {id:'pw',name:'Programación Web',room:'Aula 204'},
+  {id:'bd',name:'Bases de Datos',room:'Aula 301'},
+  {id:'se',name:'Sistemas Embebidos',room:'Lab. Electrónica'},
+  {id:'is',name:'Ingeniería de Software',room:'Aula 118'}];
+const NAMES=['Valentina Ríos','Andrés Mejía','Camila Ortega','Santiago Pérez','Daniela Cuesta','Mateo Barrera','Laura Peñate','Samuel Hoyos','Isabella Marrugo','Juan Pablo Díaz'];
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rand=rng(2611);
+const DAY=864e5, TODAY=new Date(); TODAY.setHours(0,0,0,0);
+const students=NAMES.map((n,i)=>({id:i+1,code:'2024-'+(1100+i*7),name:n,joined:new Date(TODAY-70*DAY),p:[.97,.9,.62,.85,.95,.7,.8,.55,.92,.78][i]}));
+const history={}; // asignatura -> sesiones pasadas
+SUBJECTS.forEach(s=>{history[s.id]=[];for(let k=8;k>=1;k--){const d=new Date(TODAY-k*7*DAY);const present=new Set();students.forEach(st=>{if(rand()<st.p)present.add(st.id)});history[s.id].push({date:d,present})}});
+const today={}; SUBJECTS.forEach(s=>today[s.id]=new Map());
+const events=[]; // {t,subj,sid,kind,score}
+let threshold=52, nextId=students.length+1, tplCount=students.length;
+function seedToday(){
+  [['pw',[1,2,5,9,4,7]],['se',[1,5,9,2]]].forEach(([sj,ids])=>ids.forEach((id,i)=>{
+    const t=new Date();t.setHours(7,2+i*2,10+i*7);const score=Math.round(70+rand()*24);
+    today[sj].set(id,{t,score});events.push({t,subj:sj,sid:id,kind:'ok',score});}));
+  events.push({t:(()=>{const t=new Date();t.setHours(7,5,40);return t})(),subj:'pw',sid:8,kind:'reject',score:43});
+}
+seedToday();
+
+/* ---------- Base de datos (Neon, a través de una función de Netlify) ---------- */
+const API='/.netlify/functions/api';
+let DB=false, dbNote='Datos de ejemplo, simulación en el navegador';
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+async function api(body){
+  const r=await fetch(API,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:undefined);
+  if(!r.ok){let m='';try{m=(await r.json()).error}catch(_){}const e=new Error(r.status+' '+(m||r.statusText));e.status=r.status;throw e}
+  return r.json();
+}
+const ymd=f=>{const [y,m,d]=f.split('-').map(Number);return new Date(y,m-1,d)};
+async function loadDB(){
+  const d=await api();
+  if(!d||!Array.isArray(d.asignaturas)||!d.asignaturas.length)throw new Error('La tabla asignatura está vacía. Ejecuta database/schema.sql en Neon.');
+  SUBJECTS=d.asignaturas.map(a=>({id:a.id,name:a.nombre,room:a.aula||''}));
+  students.length=0;d.estudiantes.forEach(e=>{const j=new Date(e.creado);j.setHours(0,0,0,0);students.push({id:Number(e.id),code:e.codigo,name:e.nombre,joined:j})});
+  Object.keys(history).forEach(k=>delete history[k]);Object.keys(today).forEach(k=>delete today[k]);events.length=0;
+  SUBJECTS.forEach(s=>{history[s.id]=[];today[s.id]=new Map()});
+  const t0=iso(TODAY),byId={},hist={};
+  d.sesiones.forEach(x=>{if(!history[x.asignatura_id])return;byId[x.id]=x;
+    if(x.fecha<t0){const o={date:ymd(x.fecha),present:new Set()};history[x.asignatura_id].push(o);hist[x.id]=o}});
+  d.marcajes.forEach(m=>{const x=byId[m.sesion_id];if(!x)return;const sid=Number(m.estudiante_id);
+    if(x.fecha===t0){const t=new Date(m.hora);today[x.asignatura_id].set(sid,{t,score:m.score});events.push({t,subj:x.asignatura_id,sid,kind:'ok',score:m.score})}
+    else if(hist[x.id])hist[x.id].present.add(sid)});
+  d.rechazos.forEach(r=>{const t=new Date(r.hora);if(iso(t)===t0&&history[r.asignatura_id])events.push({t,subj:r.asignatura_id,sid:null,kind:'reject',score:r.score})});
+  selSubj=selReport=SUBJECTS[0].id;
+}
+async function initDB(){
+  try{await loadDB();DB=true;dbNote='Conectado a la base de datos'}
+  catch(err){console.info('Modo demostración:',err.message)}
+}
+const dbSaveMark=(sj,sid,score)=>api({accion:'marcaje',asignatura_id:sj,estudiante_id:sid,score,fecha:iso(TODAY)});
+
+/* ---------- Utilidades ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hhmm=d=>d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+const fdate=d=>d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+const subj=id=>SUBJECTS.find(s=>s.id===id);
+const stu=id=>students.find(s=>s.id===id);
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
+function counts(st,sj){let tot=0,att=0;history[sj].forEach(s=>{if(s.date>=st.joined){tot++;if(s.present.has(st.id))att++}});tot++;if(today[sj].has(st.id))att++;return{att,tot,pct:tot?Math.round(att/tot*100):0}}
+function subjPct(sj){let a=0,t=0;students.forEach(st=>{const c=counts(st,sj);a+=c.att;t+=c.tot});return t?Math.round(a/t*100):0}
+function overall(st){let a=0,t=0;SUBJECTS.forEach(s=>{const c=counts(st,s.id);a+=c.att;t+=c.tot});return Math.round(a/t*100)}
+const statusOf=p=>p>=85?['ok','Regular']:p>=70?['warn','En riesgo']:['bad','Crítico'];
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x);return s*y}
+const Phi=z=>.5*(1+erf(z/Math.SQRT2));
+const MU_G=75,MU_I=30,SD=10;
+const FAR=t=>(1-Phi((t-MU_I)/SD))*100, FRR=t=>Phi((t-MU_G)/SD)*100;
+function gauss(mu,sd){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.max(0,Math.min(100,mu+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)))}
+
+/* ---------- Vistas ---------- */
+const TABS=[['panel','Panel'],['toma','Toma de asistencia'],['estudiantes','Estudiantes'],['reportes','Reportes'],['arquitectura','Arquitectura']];
+let current='panel', selSubj='pw', selReport='pw', scanning=false, serial=[];
+
+function renderNav(){$('#nav').innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===current}" data-k="${k}">${l}</button>`).join('')}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){location.hash=b.dataset.k}});
+function route(){const k=location.hash.slice(1);current=TABS.some(t=>t[0]===k)?k:'panel';renderNav();({panel:vPanel,toma:vToma,estudiantes:vEstudiantes,reportes:vReportes,arquitectura:vArq})[current]()}
+addEventListener('hashchange',route);
+
+function vPanel(){
+  const marks=SUBJECTS.reduce((a,s)=>a+today[s.id].size,0);
+  const rej=events.filter(e=>e.kind==='reject').length;
+  const avg=Math.round(SUBJECTS.reduce((a,s)=>a+subjPct(s.id),0)/SUBJECTS.length);
+  const risk=students.filter(s=>overall(s)<75);
+  const trend=trendData();
+  const bars=SUBJECTS.map(s=>{const p=subjPct(s.id);const c=p>=85?'':p>=70?'warn':'bad';return `<div class="bar"><div class="row"><span>${s.name}</span><b class="num">${p}%</b></div><div class="track"><div class="fill ${c}" style="width:${p}%"></div></div></div>`}).join('');
+  const feed=events.slice().sort((a,b)=>b.t-a.t).slice(0,7).map(e=>{const k=e.kind==='ok'?['ok','Registrado']:e.kind==='dup'?['idle','Ya marcado']:['bad','Rechazado'];const n=e.sid?esc(stu(e.sid).name):'Huella no inscrita';return `<li><span class="t">${hhmm(e.t)}</span><span class="n">${n}<br><span class="muted">${subj(e.subj).name}</span></span><span class="pill ${k[0]}">${k[1]}</span></li>`}).join('')||'<li><span class="muted">Aún no hay marcajes hoy.</span></li>';
+  const riskRows=risk.sort((a,b)=>overall(a)-overall(b)).map(s=>{const p=overall(s);const [c,l]=statusOf(p);return `<tr><td>${esc(s.name)}</td><td class="mono">${s.code}</td><td class="r num">${p}%</td><td><span class="pill ${c}">${l}</span></td></tr>`}).join('')||'<tr><td colspan="4" class="muted">Ningún estudiante por debajo del 75 %.</td></tr>';
+  $('#view').innerHTML=`
+  <div class="grid g4">
+    <div class="panel stat"><div class="eyebrow">Estudiantes inscritos</div><div class="v num">${students.length}</div><div class="s">con plantilla biométrica activa</div></div>
+    <div class="panel stat"><div class="eyebrow">Marcajes hoy</div><div class="v num">${marks}</div><div class="s">en ${SUBJECTS.filter(s=>today[s.id].size).length} de ${SUBJECTS.length} asignaturas</div></div>
+    <div class="panel stat"><div class="eyebrow">Asistencia promedio</div><div class="v num">${avg}%</div><div class="s">sesiones registradas y hoy</div></div>
+    <div class="panel stat"><div class="eyebrow">Intentos rechazados hoy</div><div class="v num">${rej}</div><div class="s">umbral de coincidencia ${threshold}/100</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <section class="panel"><header><h3>Asistencia por asignatura</h3><span class="muted">Regular ≥ 85 % · En riesgo 70–84 % · Crítico &lt; 70 %</span></header><div class="bars">${bars}</div></section>
+    <section class="panel"><header><h3>Tendencia por sesión</h3><span class="muted">promedio de las 4 asignaturas</span></header>${trend.length>=2?trendSvg(trend):'<p class="muted">Se necesitan al menos 2 sesiones anteriores para ver la tendencia.</p>'}</section>
+    <section class="panel"><header><h3>Últimos marcajes</h3><a href="#toma" style="color:var(--accent)">Ir al lector</a></header><ul class="feed">${feed}</ul></section>
+    <section class="panel"><header><h3>Estudiantes con alerta de deserción</h3><span class="muted">asistencia global &lt; 75 %</span></header><div class="tablewrap"><table><thead><tr><th>Nombre</th><th>Código</th><th class="r">Asist.</th><th>Estado</th></tr></thead><tbody>${riskRows}</tbody></table></div></section>
+  </div>`;
+}
+function trendData(){const m=new Map();SUBJECTS.forEach(s=>history[s.id].forEach(ss=>{const k=ss.date.getTime();const o=m.get(k)||{date:ss.date,a:0,t:0};o.a+=ss.present.size;o.t+=students.length;m.set(k,o)}));return [...m.values()].sort((a,b)=>a.date-b.date).map(o=>({date:o.date,pct:o.t?Math.min(100,Math.round(o.a/o.t*100)):0}))}
+function trendSvg(v){
+  const dates=v.map(o=>o.date);v=v.map(o=>o.pct);const step=Math.ceil(v.length/6);
+  const W=520,H=210,L=34,R=12,T=12,B=26,n=v.length;
+  const x=i=>L+i*(W-L-R)/(n-1), y=p=>T+(100-p)*(H-T-B)/60-(0); // eje 40–100
+  const yy=p=>T+(100-p)*(H-T-B)/60;
+  let g='';[40,60,80,100].forEach(p=>{g+=`<line x1="${L}" x2="${W-R}" y1="${yy(p)}" y2="${yy(p)}" stroke="var(--line)"/><text x="${L-6}" y="${yy(p)+4}" text-anchor="end">${p}</text>`});
+  const pts=v.map((p,i)=>`${x(i)},${yy(Math.max(40,p))}`).join(' ');
+  const area=`${x(0)},${yy(40)} ${pts} ${x(n-1)},${yy(40)}`;
+  const lab=dates.map((d,i)=>i%step===0?`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${fdate(d)}</text>`:'').join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tendencia de asistencia por sesión">${g}<polygon points="${area}" fill="var(--accent-soft)" opacity=".7"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${v.map((p,i)=>`<circle cx="${x(i)}" cy="${yy(Math.max(40,p))}" r="${i===n-1?5:3}" fill="var(--accent)"/>`).join('')}<text x="${x(n-1)-6}" y="${yy(v[n-1])-10}" text-anchor="end" style="fill:var(--ink);font-weight:600">${v[n-1]}%</text>${lab}</svg>`;
+}
+
+function vToma(){
+  const sj=subj(selSubj), m=today[selSubj];
+  $('#view').innerHTML=`
+  <div class="grid g2">
+    <section class="panel sensor">
+      <div class="controls" style="width:100%">
+        <label style="flex:1;min-width:180px">Asignatura de la sesión<select id="selS">${SUBJECTS.map(s=>`<option value="${s.id}" ${s.id===selSubj?'selected':''}>${s.name} · ${s.room}</option>`).join('')}</select></label>
+      </div>
+      <div class="reader" id="reader"><div class="beam"></div>${fpSvg()}</div>
+      <div class="status" id="status">Sensor listo. Coloca un dedo.<small>Simula el AS608 conectado al Arduino Mega por UART.</small></div>
+      <div class="controls" style="width:100%">
+        <label style="flex:1;min-width:180px">Estudiante que coloca el dedo<select id="selP">${students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label>
+        <button class="btn" id="bGen">Colocar dedo</button>
+        <button class="btn danger" id="bImp">Persona no inscrita</button>
+      </div>
+      <div class="muted" style="font-size:12px">Umbral de coincidencia: <b class="num">${threshold}</b>/100 (ajustable en Arquitectura). Un estudiante inscrito puede ser rechazado a veces: es el FRR real del modelo.</div>
+    </section>
+    <section class="panel">
+      <header><h3>Lista de ${sj.name}</h3><span class="muted num" id="cnt">${m.size} de ${students.length} presentes</span></header>
+      <div class="roster" id="roster">${rosterHtml()}</div>
+    </section>
+  </div>
+  <section class="panel" style="margin-top:16px"><header><h3>Monitor serial y API</h3><button class="btn ghost" id="bClr">Limpiar</button></header><pre class="log mono" id="log"></pre></section>`;
+  $('#selS').onchange=e=>{selSubj=e.target.value;vToma()};
+  $('#bGen').onclick=()=>scan(+$('#selP').value);
+  $('#bImp').onclick=()=>scan(null);
+  $('#bClr').onclick=()=>{serial=[];drawLog()};
+  drawLog();
+}
+function rosterHtml(){const m=today[selSubj];return students.map(s=>{const r=m.get(s.id);return `<div class="r"><div>${esc(s.name)}<br><span class="muted mono">${s.code}</span></div>${r?`<span class="pill ok">Presente ${hhmm(r.t)}</span>`:'<span class="pill idle">Pendiente</span>'}</div>`}).join('')}
+function fpSvg(){return `<svg viewBox="0 0 110 140" aria-hidden="true"><path d="M20 62C20 34 36 16 55 16s35 18 35 46"/><path d="M30 66c0-20 11-34 25-34s25 14 25 34v8"/><path d="M40 70c0-12 6-20 15-20s15 8 15 20c0 14 2 24 6 34"/><path d="M50 74c0-5 2-8 5-8s5 3 5 8c0 18 3 32 9 46"/><path d="M55 76v18c0 10 2 18 5 26"/><path d="M30 82c0 14 2 28 8 40"/><path d="M20 78c0 20 3 38 10 52"/><path d="M90 80c0 16-2 30-6 44"/></svg>`}
+function logLine(cls,txt){serial.push(`<span class="${cls}">${esc(txt)}</span>`);if(serial.length>80)serial.shift();drawLog()}
+function drawLog(){const l=$('#log');if(!l)return;l.innerHTML=serial.join('\n')||'<span class="rx">Esperando actividad del sensor…</span>';l.scrollTop=l.scrollHeight}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function scan(sid){
+  if(scanning)return;if(!students.length){toast('Primero inscribe estudiantes');return}scanning=true;
+  const rd=$('#reader'),st=$('#status'),btns=[$('#bGen'),$('#bImp')];btns.forEach(b=>b.disabled=true);
+  rd.className='reader scanning';st.innerHTML='Leyendo huella…<small>Capturando imagen y extrayendo minucias</small>';
+  const sj=selSubj;
+  logLine('tx','→ AS608  GenImg  [EF01 FFFFFFFF 01 0003 01 0005]');await wait(450);
+  logLine('rx','← AS608  ACK 00 (imagen capturada)');logLine('tx','→ AS608  Img2Tz  buffer=1');await wait(450);
+  const score=Math.round(sid?gauss(MU_G,SD):gauss(MU_I,SD));
+  const matched=score>=threshold;
+  logLine('tx','→ AS608  Search  umbral='+threshold);await wait(300);
+  const now=new Date();let kind,msg,sub;
+  if(matched){
+    const who=sid||students[Math.floor(Math.random()*students.length)].id; // un impostor aceptado coincide con alguien inscrito
+    const p=stu(who);
+    if(today[sj].has(who)){kind='dup';msg=`${p.name}: ya tenía asistencia`;sub=`Coincidencia ${score}/100 · no se duplica el registro`;logLine('rx',`← ID=#${String(who).padStart(2,'0')} score=${score} (duplicado, sin POST)`)}
+    else{today[sj].set(who,{t:now,score});kind='ok';msg=`Asistencia registrada: ${p.name}`;sub=`Coincidencia ${score}/100 · ${hhmm(now)}`;
+      logLine('rx',`← ID=#${String(who).padStart(2,'0')} score=${score}`);logLine('tx',`POST /api/asistencia {"estudiante":${who},"asignatura":"${sj}","score":${score}}`);if(DB){dbSaveMark(sj,who,score).then(()=>logLine('ok','← 201 Created (guardado en la base de datos)')).catch(e=>{logLine('er','← ERROR '+e.message);toast('No se pudo guardar el marcaje')})}else logLine('ok','← 201 Created (simulado)')}
+    if(!sid)sub+=' · FALSA ACEPTACIÓN (FAR)';
+    events.push({t:now,subj:sj,sid:who,kind:kind==='dup'?'dup':'ok',score});
+  }else{
+    kind='reject';msg=sid?'Huella no reconocida, reintenta':'Huella no inscrita: acceso rechazado';sub=`Coincidencia ${score}/100 por debajo del umbral ${threshold}`+(sid?' · FALSO RECHAZO (FRR)':'');
+    logLine('er',`← NOTFOUND score=${score}`);if(DB)api({accion:'rechazo',asignatura_id:sj,score}).catch(()=>{});events.push({t:now,subj:sj,sid:null,kind:'reject',score});
+  }
+  rd.className='reader '+(kind==='ok'?'ok':kind==='dup'?'':'fail');
+  st.innerHTML=`${esc(msg)}<small>${esc(sub)}</small>`;
+  if($('#roster')){$('#roster').innerHTML=rosterHtml();$('#cnt').textContent=`${today[selSubj].size} de ${students.length} presentes`}
+  btns.forEach(b=>b.disabled=false);scanning=false;
+  setTimeout(()=>{if($('#reader')&&!scanning)$('#reader').className='reader'},2200);
+}
+
+function vEstudiantes(){
+  const rows=students.map(s=>`<tr><td>${esc(s.name)}</td><td class="mono">${s.code}</td><td class="mono">T-${String(s.id).padStart(4,'0')}</td><td class="r num">${overall(s)}%</td></tr>`).join('');
+  $('#view').innerHTML=`
+  <div class="grid g2">
+    <section class="panel"><header><h3>Inscribir estudiante</h3></header>
+      <form class="form" id="f" autocomplete="off">
+        <label>Nombre completo<input type="text" id="fn" required placeholder="Ej. María Fernanda Lora"></label>
+        <label>Código estudiantil<input type="text" id="fc" required placeholder="Ej. 2025-1203"></label>
+        <label class="consent"><input type="checkbox" id="fk"><span>El estudiante autoriza de forma previa, expresa e informada el tratamiento de su dato biométrico (huella dactilar, dato sensible) según la Ley 1581 de 2012 y el Decreto 1377 de 2013.</span></label>
+        <div class="controls"><button class="btn" type="submit" id="fb" disabled>Capturar huella e inscribir</button><span class="muted" id="fs" style="font-size:12px">El botón se habilita al aceptar el consentimiento.</span></div>
+      </form>
+      <p class="muted" style="font-size:12px;margin:14px 0 0">Se guarda solo el vector de minucias cifrado. La imagen de la huella nunca se almacena.</p>
+    </section>
+    <section class="panel"><header><h3>Inscritos</h3><span class="muted num">${students.length} estudiantes</span></header>
+      <div class="tablewrap"><table><thead><tr><th>Nombre</th><th>Código</th><th>Plantilla</th><th class="r">Asist.</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+  </div>`;
+  const ck=$('#fk'),fb=$('#fb');ck.onchange=()=>fb.disabled=!ck.checked;
+  $('#f').onsubmit=async e=>{e.preventDefault();const n=$('#fn').value.trim(),c=$('#fc').value.trim();if(!n||!c||!ck.checked)return;
+    fb.disabled=true;$('#fs').textContent='Captura 1 de 2: coloca el dedo…';await wait(900);$('#fs').textContent='Captura 2 de 2: retira y vuelve a colocar…';await wait(900);
+    let id=nextId++;
+    if(DB){try{const r=await api({accion:'estudiante',codigo:c,nombre:n,plantilla_id:'T-'+String(students.length+1).padStart(4,'0')});id=Number(r.id)}catch(err){toast(err.status===409?'Ese código estudiantil ya existe':'No se pudo guardar en la base de datos');fb.disabled=false;$('#fs').textContent='';return}}
+    students.push({id,code:c,name:n,joined:new Date(TODAY),p:.8});toast(`${n} inscrito${DB?' y guardado en la base de datos':''}.`);vEstudiantes()}
+}
+
+function vReportes(){
+  const sj=subj(selReport);
+  const rows=students.map(s=>({s,c:counts(s,sj.id)})).sort((a,b)=>a.c.pct-b.c.pct);
+  const body=rows.map(({s,c})=>{const [k,l]=statusOf(c.pct);return `<tr><td>${esc(s.name)}</td><td class="mono">${s.code}</td><td class="r num">${c.att} / ${c.tot}</td><td class="r num"><b>${c.pct}%</b></td><td><span class="pill ${k}">${l}</span></td></tr>`}).join('');
+  $('#view').innerHTML=`
+  <section class="panel"><header><h3>Reporte de ausentismo</h3>
+    <div class="controls"><label>Asignatura<select id="rs">${SUBJECTS.map(s=>`<option value="${s.id}" ${s.id===selReport?'selected':''}>${s.name}</option>`).join('')}</select></label><button class="btn ghost" id="cp">Copiar CSV</button></div></header>
+    <p class="muted" style="margin:0 0 12px">${history[sj.id].length+1} sesiones (${history[sj.id].length} anteriores y la de hoy) · ordenado de menor a mayor asistencia · ${rows.filter(r=>r.c.pct<85).length} estudiantes bajo el 85 %.</p>
+    <div class="tablewrap"><table><thead><tr><th>Estudiante</th><th>Código</th><th class="r">Asistencias</th><th class="r">%</th><th>Estado</th></tr></thead><tbody>${body}</tbody></table></div>
+  </section>`;
+  $('#rs').onchange=e=>{selReport=e.target.value;vReportes()};
+  $('#cp').onclick=async()=>{const csv='codigo,nombre,asistencias,sesiones,porcentaje\n'+rows.map(({s,c})=>`${s.code},"${s.name}",${c.att},${c.tot},${c.pct}`).join('\n');
+    try{await navigator.clipboard.writeText(csv);toast('CSV copiado al portapapeles')}catch(e){const t=document.createElement('textarea');t.value=csv;document.body.appendChild(t);t.select();try{document.execCommand('copy');toast('CSV copiado')}catch(_){toast('No se pudo copiar')}t.remove()}};
+}
+
+function vArq(){
+  $('#view').innerHTML=`
+  <section class="panel"><header><h3>Flujo de una marcación</h3><span class="muted">arquitectura híbrida: captura local y sincronización en tiempo real</span></header>
+    <div class="flow">
+      <div class="step"><span class="k">1</span><b>Dedo</b><span>El estudiante apoya el dedo en el lector del aula.</span></div>
+      <div class="step"><span class="k">2</span><b>Sensor AS608</b><span>Captura óptica. UART TTL a 57 600 bps.</span></div>
+      <div class="step"><span class="k">3</span><b>Arduino Mega 2560</b><span>Extrae minucias y compara con las plantillas.</span></div>
+      <div class="step"><span class="k">4</span><b>API REST</b><span>POST /api/asistencia con el estudiante y la asignatura.</span></div>
+      <div class="step"><span class="k">5</span><b>Backend + BD</b><span>Valida, evita duplicados y guarda el marcaje.</span></div>
+      <div class="step"><span class="k">6</span><b>Frontend web</b><span>Docentes y administrativos ven reportes al instante.</span></div>
+    </div>
+  </section>
+  <section class="panel" style="margin-top:16px"><header><h3>Umbral de decisión: FAR, FRR y EER</h3><span class="muted">modelo simulado: inscritos ~ N(${MU_G},${SD}), impostores ~ N(${MU_I},${SD})</span></header>
+    <div class="controls" style="margin-bottom:8px"><label style="flex:1;min-width:220px">Umbral de coincidencia: <span class="num" id="tv">${threshold}</span><input class="slider" type="range" id="th" min="5" max="95" value="${threshold}"></label></div>
+    <div class="grid g4" id="rd" style="margin-bottom:10px"></div>
+    <div id="ch"></div>
+  </section>
+  <section class="panel" style="margin-top:16px"><header><h3>Modelo relacional</h3><span class="muted">normalizado hasta 3FN</span></header>
+    <div class="dbgrid">
+      <div><b>estudiante</b><span>id, codigo, nombre, consentimiento_fecha</span></div>
+      <div><b>plantilla_biometrica</b><span>id, estudiante_id, vector_cifrado</span></div>
+      <div><b>asignatura</b><span>id, nombre, aula, docente_id</span></div>
+      <div><b>matricula</b><span>estudiante_id, asignatura_id</span></div>
+      <div><b>sesion</b><span>id, asignatura_id, fecha</span></div>
+      <div><b>marcaje</b><span>id, sesion_id, estudiante_id, hora, score</span></div>
+    </div>
+  </section>`;
+  const draw=()=>{
+    const t=threshold,far=FAR(t),frr=FRR(t);
+    $('#tv').textContent=t;
+    $('#rd').innerHTML=`<div class="panel stat" style="padding:12px"><div class="eyebrow">FAR (falsa aceptación)</div><div class="v num" style="font-size:24px">${far<.1?far.toFixed(3):far.toFixed(1)}%</div></div><div class="panel stat" style="padding:12px"><div class="eyebrow">FRR (falso rechazo)</div><div class="v num" style="font-size:24px">${frr<.1?frr.toFixed(3):frr.toFixed(1)}%</div></div><div class="panel stat" style="padding:12px"><div class="eyebrow">EER (punto de cruce)</div><div class="v num" style="font-size:24px">${FAR((MU_G+MU_I)/2).toFixed(1)}%</div><div class="s">umbral ${(MU_G+MU_I)/2}</div></div>`;
+    $('#ch').innerHTML=errSvg(t);
+  };
+  $('#th').oninput=e=>{threshold=+e.target.value;draw()};draw();
+}
+function errSvg(t){
+  const W=640,H=280,L=40,R=16,T=14,B=34,x=v=>L+v*(W-L-R)/100,y=p=>T+(100-p)*(H-T-B)/100;
+  let g='';[0,25,50,75,100].forEach(v=>{g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v}%</text><text x="${x(v)}" y="${H-12}" text-anchor="middle">${v}</text>`});
+  const pf=[],pr=[];for(let v=0;v<=100;v+=2){pf.push(`${x(v)},${y(FAR(v))}`);pr.push(`${x(v)},${y(FRR(v))}`)}
+  const e=(MU_G+MU_I)/2;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curvas FAR y FRR según el umbral">${g}
+  <polyline points="${pf.join(' ')}" fill="none" stroke="var(--warn)" stroke-width="2.5"/><polyline points="${pr.join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+  <line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H-B}" stroke="var(--ink)" stroke-dasharray="4 4"/>
+  <circle cx="${x(e)}" cy="${y(FAR(e))}" r="5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+  <text x="${x(e)+8}" y="${y(FAR(e))-8}" style="fill:var(--ink)">EER</text>
+  <circle cx="${x(t)}" cy="${y(FAR(t))}" r="4" fill="var(--warn)"/><circle cx="${x(t)}" cy="${y(FRR(t))}" r="4" fill="var(--accent)"/>
+  <text x="${W-R-4}" y="${y(FAR(10))-8}" text-anchor="end" style="fill:var(--warn);font-weight:600">FAR</text>
+  <text x="${x(88)}" y="${y(FRR(88))-8}" text-anchor="end" style="fill:var(--accent);font-weight:600">FRR</text>
+  <text x="${(L+W-R)/2}" y="${H-1}" text-anchor="middle">umbral de coincidencia (0–100)</text></svg>`;
+}
+(async()=>{await initDB();const t=$('#tag');t.textContent=DB?dbNote:'Datos de ejemplo, simulación en el navegador';if(DB)t.classList.add('live');route()})();
+</script>
+
+</body>
+</html>
